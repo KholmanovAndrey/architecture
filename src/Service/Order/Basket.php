@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Service\Order;
 
+use Facade\CheckoutFacade;
 use Model;
 use Model\Entity\Product;
 use Model\Repository\ProductRepository;
@@ -93,20 +94,30 @@ class Basket
      */
     public function checkout(): void
     {
-        // Здесь должна быть некоторая логика выбора способа платежа
-        $billing = new Card();
+        $checkout = new CheckoutFacade(
+            new Card(),
+            new NullObject(),
+            new Email(),
+            new Security($this->session),
+            $this->getProductsInfo()
+        );
 
-        // Здесь должна быть некоторая логика получения информации о скидке
-        // пользователя
-        $discount = new NullObject();
+        $checkout->checkout();
 
-        // Здесь должна быть некоторая логика получения способа уведомления
-        // пользователя о покупке
-        $communication = new Email();
-
-        $security = new Security($this->session);
-
-        $this->checkoutProcess($discount, $billing, $security, $communication);
+//        // Здесь должна быть некоторая логика выбора способа платежа
+//        $billing = new Card();
+//
+//        // Здесь должна быть некоторая логика получения информации о скидке
+//        // пользователя
+//        $discount = new NullObject();
+//
+//        // Здесь должна быть некоторая логика получения способа уведомления
+//        // пользователя о покупке
+//        $communication = new Email();
+//
+//        $security = new Security($this->session);
+//
+//        $this->checkoutProcess($discount, $billing, $security, $communication);
     }
 
     /**
@@ -119,25 +130,25 @@ class Basket
      * @throws BillingException
      * @throws CommunicationException
      */
-    public function checkoutProcess(
-        DiscountInterface $discount,
-        BillingInterface $billing,
-        SecurityInterface $security,
-        CommunicationInterface $communication
-    ): void {
-        $totalPrice = 0;
-        foreach ($this->getProductsInfo() as $product) {
-            $totalPrice += $product->getPrice();
-        }
-
-        $discount = $discount->getDiscount();
-        $totalPrice = $totalPrice - $totalPrice / 100 * $discount;
-
-        $billing->pay($totalPrice);
-
-        $user = $security->getUser();
-        $communication->process($user, 'checkout_template');
-    }
+//    public function checkoutProcess(
+//        DiscountInterface $discount,
+//        BillingInterface $billing,
+//        SecurityInterface $security,
+//        CommunicationInterface $communication
+//    ): void {
+//        $totalPrice = 0;
+//        foreach ($this->getProductsInfo() as $product) {
+//            $totalPrice += $product->getPrice();
+//        }
+//
+//        $discount = $discount->getDiscount();
+//        $totalPrice = $totalPrice - $totalPrice / 100 * $discount;
+//
+//        $billing->pay($totalPrice);
+//
+//        $user = $security->getUser();
+//        $communication->process($user, 'checkout_template');
+//    }
 
     /**
      * Фабричный метод для репозитория Product
