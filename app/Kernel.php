@@ -3,6 +3,10 @@
 declare(strict_types = 1);
 
 use Framework\Registry;
+use Framework\Command\RegisterConfigCommand;
+use Framework\Command\RegisterConfigHandler;
+use Framework\Command\RegisterRoutesCommand;
+use Framework\Command\RegisterRoutesHandler;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
@@ -15,6 +19,7 @@ use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
+
 
 class Kernel
 {
@@ -39,33 +44,13 @@ class Kernel
      */
     public function handle(Request $request): Response
     {
-        $this->registerConfigs();
-        $this->registerRoutes();
+        $registerCommand = new RegisterConfigCommand($this->containerBuilder);
+        (new RegisterConfigHandler($registerCommand))->execute();
+
+        $registerCommand = new RegisterRoutesCommand($this->containerBuilder);
+        $this->routeCollection = (new RegisterRoutesHandler($registerCommand))->execute();
 
         return $this->process($request);
-    }
-
-    /**
-     * @return void
-     */
-    protected function registerConfigs(): void
-    {
-        try {
-            $fileLocator = new FileLocator(__DIR__ . DIRECTORY_SEPARATOR . 'config');
-            $loader = new PhpFileLoader($this->containerBuilder, $fileLocator);
-            $loader->load('parameters.php');
-        } catch (\Throwable $e) {
-            die('Cannot read the config file. File: ' . __FILE__ . '. Line: ' . __LINE__);
-        }
-    }
-
-    /**
-     * @return void
-     */
-    protected function registerRoutes(): void
-    {
-        $this->routeCollection = require __DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'routing.php';
-        $this->containerBuilder->set('route_collection', $this->routeCollection);
     }
 
     /**
