@@ -10,7 +10,7 @@ use Service\Product\ProductService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class ProductController extends BaseController
+class ProductInfoController extends BaseController
 {
     /**
      * Информация о продукте
